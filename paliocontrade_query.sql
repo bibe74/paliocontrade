@@ -635,3 +635,34 @@ ORDER BY NumeroPrimiPosti DESC,
 	A.Cognome,
 	A.Nome;
 
+DROP VIEW IF EXISTS UniformitaTempiView;
+
+CREATE VIEW UniformitaTempiView
+AS
+SELECT
+	T.PKAtleta,
+	COUNT(DISTINCT T.Anno) AS NumeroPartecipazioni,
+	COUNT(1) AS NumeroFrazioni,
+	CONCAT(
+		RIGHT(CONCAT(CASE WHEN MIN(T.TempoSecondi) >= 600 THEN "0" ELSE "" END, FLOOR(MIN(T.TempoSecondi) / 60) - 60 * FLOOR(MIN(T.TempoSecondi) / 3600)), 2), "'",
+		RIGHT(CONCAT("0", FLOOR(MIN(T.TempoSecondi)) - 60 * FLOOR(MIN(T.TempoSecondi) / 60)), 2), "\"",
+		RIGHT(CONCAT("0", FLOOR((MIN(T.TempoSecondi) - FLOOR(MIN(T.TempoSecondi))) * 100)), 2)
+	) AS MigliorTempo,
+	CONCAT(
+		RIGHT(CONCAT(CASE WHEN MAX(T.TempoSecondi) >= 600 THEN "0" ELSE "" END, FLOOR(MAX(T.TempoSecondi) / 60) - 60 * FLOOR(MAX(T.TempoSecondi) / 3600)), 2), "'",
+		RIGHT(CONCAT("0", FLOOR(MAX(T.TempoSecondi)) - 60 * FLOOR(MAX(T.TempoSecondi) / 60)), 2), "\"",
+		RIGHT(CONCAT("0", FLOOR((MAX(T.TempoSecondi) - FLOOR(MAX(T.TempoSecondi))) * 100)), 2)
+	) AS PeggiorTempo,
+	CONCAT(
+		RIGHT(CONCAT(CASE WHEN AVG(T.TempoSecondi) >= 600 THEN "0" ELSE "" END, FLOOR(AVG(T.TempoSecondi) / 60) - 60 * FLOOR(AVG(T.TempoSecondi) / 3600)), 2), "'",
+		RIGHT(CONCAT("0", FLOOR(AVG(T.TempoSecondi)) - 60 * FLOOR(AVG(T.TempoSecondi) / 60)), 2), "\"",
+		RIGHT(CONCAT("0", FLOOR((AVG(T.TempoSecondi) - FLOOR(AVG(T.TempoSecondi))) * 100)), 2)
+	) AS TempoMedio,
+	ROUND(STD(T.TempoSecondi) / COUNT(1), 2) AS IndiceDiVariabilita
+
+FROM T_Tempi T
+INNER JOIN T_Atleti A ON A.PKAtleta = T.PKAtleta
+GROUP BY T.PKAtleta
+HAVING COUNT(1) >= 5
+ORDER BY STD(T.TempoSecondi) / COUNT(1),
+	NumeroPartecipazioni DESC;
