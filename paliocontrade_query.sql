@@ -666,3 +666,41 @@ GROUP BY T.PKAtleta
 HAVING COUNT(1) >= 5
 ORDER BY STD(T.TempoSecondi) / COUNT(1),
 	NumeroPartecipazioni DESC;
+
+DROP TABLE IF EXISTS TempoEsordientiUomini; 
+
+CREATE TABLE TempoEsordientiUomini AS 
+SELECT 
+	REPLACE(t.PKAtleta, '_', ' ') AS Atleta, 
+	t.Contrada, 
+	t.Anno, 
+	t.TempoDescrizione 
+FROM (
+	SELECT
+		PKAtleta, 
+		MIN(Anno) AS AnnoEsordio 
+	FROM T_Tempi 
+	GROUP BY PKAtleta
+) AE 
+INNER JOIN T_Tempi t ON t.PKAtleta = AE.PKAtleta AND t.Anno = AE.AnnoEsordio 
+INNER JOIN T_Atleti A ON A.PKAtleta = AE.PKAtleta AND A.Sesso = 'M' 
+ORDER BY t.TempoSecondi;
+
+DROP TABLE IF EXISTS TempoEsordientiDonne; 
+
+CREATE TABLE TempoEsordientiDonne AS 
+SELECT 
+	REPLACE(t.PKAtleta, '_', ' ') AS Atleta, 
+	t.Contrada, 
+	t.Anno, 
+	t.TempoDescrizione 
+FROM (
+	SELECT
+		PKAtleta, 
+		MIN(Anno) AS AnnoEsordio 
+	FROM T_Tempi 
+	GROUP BY PKAtleta
+) AE 
+INNER JOIN T_Tempi t ON t.PKAtleta = AE.PKAtleta AND t.Anno = AE.AnnoEsordio 
+INNER JOIN T_Atleti A ON A.PKAtleta = AE.PKAtleta AND A.Sesso = 'F' 
+ORDER BY t.TempoSecondi;
