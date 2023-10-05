@@ -1,10 +1,16 @@
+DROP PROCEDURE IF EXISTS RebuildAllTables;
+
+DELIMITER //
+
+CREATE PROCEDURE RebuildAllTables()
+
+BEGIN
+
 -- Importare T_Tempi e T_Atleti
 
 /* ContradaAtletaPartecipazioni */
 
-DROP VIEW IF EXISTS ContradaAtletaPartecipazioniView;
-
-CREATE VIEW ContradaAtletaPartecipazioniView
+CREATE VIEW IF NOT EXISTS ContradaAtletaPartecipazioniView
 AS
 SELECT T.Contrada,
 	A.Cognome,
@@ -23,7 +29,7 @@ ORDER BY T.Contrada,
 	A.Cognome,
 	A.Nome;
 
-SELECT * FROM ContradaAtletaPartecipazioniView WHERE Contrada = 'MOLINO';
+/* SELECT * FROM ContradaAtletaPartecipazioniView WHERE Contrada = 'MOLINO'; */
 
 /* SessoTempi */
 
@@ -46,7 +52,7 @@ ORDER BY A.Sesso,
 	T.Anno,
 	T.Pettorale;
 
-SELECT * FROM SessoTempiView WHERE Sesso = 'M' LIMIT 100;
+/* SELECT * FROM SessoTempiView WHERE Sesso = 'M' LIMIT 100; */
 
 /* Tempi */
 
@@ -68,7 +74,7 @@ ORDER BY T.Anno,
 	T.Contrada,
 	T.Pettorale;
 
-SELECT * FROM TempiView;
+/* SELECT * FROM TempiView; */
 
 /* TempiFull */
 
@@ -103,7 +109,7 @@ ORDER BY TV.Anno,
 	TV.Contrada,
 	TV.Pettorale;
 
-SELECT * FROM TempiFullView WHERE Anno = 2016;
+/* SELECT * FROM TempiFullView WHERE Anno = 2023; */
 
 /* AnnoContradaTempoTotale */
 
@@ -126,7 +132,7 @@ GROUP BY TV.Anno,
 ORDER BY TV.Anno,
 	SUM(TV.TempoSecondi);
 
-SELECT * FROM AnnoContradaTempoTotaleView;
+/* SELECT * FROM AnnoContradaTempoTotaleView; */
 
 /* AnnoContradaPiazzamentoTempo */
 
@@ -152,9 +158,25 @@ FROM AnnoContradaTempoTotaleView
 ORDER BY Anno,
 	Piazzamento;
 
-SELECT * FROM AnnoContradaPiazzamentoTempo;
+/* SELECT * FROM AnnoContradaPiazzamentoTempo; */
 
 /* SessoMiglioriTempi */
+
+DROP TABLE IF EXISTS SessoMiglioriTempiDettaglio;
+
+CREATE TABLE SessoMiglioriTempiDettaglio
+AS
+SELECT PKAtleta,
+	@num := if(@num IS NULL, 1, if(@pkatleta = PKAtleta, @num + 1, 1)) AS rank,
+	@pkatleta := PKAtleta AS dummy,
+	Anno,
+	Contrada,
+	Pettorale,
+	TempoSecondi,
+	TempoDescrizione
+FROM T_Tempi
+ORDER BY PKAtleta,
+	TempoSecondi;
 
 DROP TABLE IF EXISTS SessoMiglioriTempi;
 
@@ -167,26 +189,15 @@ SELECT
 	T.Anno,
 	T.Contrada,
 	T.Pettorale,
+	T.TempoSecondi,
 	T.TempoDescrizione
-FROM (
-	SELECT PKAtleta,
-		@num := if(@num IS NULL, 1, if(@pkatleta = PKAtleta, @num + 1, 1)) AS rank,
-		@pkatleta := PKAtleta AS dummy,
-		Anno,
-		Contrada,
-		Pettorale,
-		TempoSecondi,
-		TempoDescrizione
-	FROM T_Tempi
-	ORDER BY PKAtleta,
-		TempoSecondi
-) T
+FROM SessoMiglioriTempiDettaglio T
 INNER JOIN T_Atleti A ON T.PKAtleta = A.PKAtleta
 WHERE T.rank = 1
 ORDER BY A.Sesso,
 	T.TempoSecondi;
 
-SELECT * FROM SessoMiglioriTempi;
+/* SELECT * FROM SessoMiglioriTempi ORDER BY Sesso, TempoSecondi; */
 
 /* AtletaTotalePartecipazioni */
 
@@ -217,7 +228,7 @@ ORDER BY NumeroPartecipazioni DESC,
 	A.Cognome,
 	A.Nome;
 
-SELECT * FROM AtletaTotalePartecipazioniView;
+/* SELECT * FROM AtletaTotalePartecipazioniView; */
 
 /* Piazzamenti */
 
@@ -253,7 +264,7 @@ FROM (
 ORDER BY TT.Anno,
 	TT.TempoSecondi;
 
-SELECT * FROM Piazzamenti;
+/* SELECT * FROM Piazzamenti; */
 
 /* PiazzamentiTotali */
 
@@ -270,7 +281,7 @@ FROM Piazzamenti
 GROUP BY Contrada
 ORDER BY 1o DESC, 2o DESC, 3o DESC, 4o DESC;
 
-SELECT * FROM PiazzamentiTotaliView;
+/* SELECT * FROM PiazzamentiTotaliView; */
 
 /* Punteggi */
 
@@ -284,7 +295,7 @@ FROM Piazzamenti
 GROUP BY Contrada
 ORDER BY Punti DESC, Contrada;
 
-SELECT * FROM PunteggiView;
+/* SELECT * FROM PunteggiView; */
 
 /* ContradaTempoTotale */
 
@@ -305,7 +316,7 @@ FROM T_Tempi T
 GROUP BY Contrada
 ORDER BY TempoSecondi;
 
-SELECT * FROM ContradaTempoTotaleView;
+/* SELECT * FROM ContradaTempoTotaleView; */
 
 /* TempoTotale */
 
@@ -324,7 +335,7 @@ SELECT
 	) AS TempoDescrizione
 FROM T_Tempi T;
 
-SELECT * FROM TempoTotaleView;
+/* SELECT * FROM TempoTotaleView; */
 
 /* ContradaMigliorTempo */
 
@@ -351,7 +362,7 @@ FROM (
 WHERE P.rank = 1
 ORDER BY P.TempoSecondi;
 
-SELECT * FROM ContradaMigliorTempo;
+/* SELECT * FROM ContradaMigliorTempo; */
 
 /* PiazzamentiUomini */
 
@@ -388,7 +399,7 @@ FROM (
 ORDER BY TT.Anno,
 	TT.TempoSecondi;
 
-SELECT * FROM PiazzamentiUomini;
+/* SELECT * FROM PiazzamentiUomini; */
 
 /* ContradaMigliorPiazzamentoUomini */
 
@@ -438,7 +449,7 @@ LEFT JOIN (
 WHERE P.rank = 1
 ORDER BY P.TempoSecondi;
 
-SELECT * FROM ContradaMigliorPiazzamentoUomini;
+/* SELECT * FROM ContradaMigliorPiazzamentoUomini; */
 
 /* PiazzamentiDonne */
 
@@ -475,7 +486,7 @@ FROM (
 ORDER BY TT.Anno,
 	TT.TempoSecondi;
 
-SELECT * FROM PiazzamentiDonne;
+/* SELECT * FROM PiazzamentiDonne; */
 
 /* ContradaMigliorPiazzamentoDonne */
 
@@ -514,7 +525,7 @@ FROM (
 WHERE P.rank = 1
 ORDER BY P.TempoSecondi;
 
-SELECT * FROM ContradaMigliorPiazzamentoDonne;
+/* SELECT * FROM ContradaMigliorPiazzamentoDonne; */
 
 /* SessoTotaleTempi */
 
@@ -704,3 +715,9 @@ FROM (
 INNER JOIN T_Tempi t ON t.PKAtleta = AE.PKAtleta AND t.Anno = AE.AnnoEsordio 
 INNER JOIN T_Atleti A ON A.PKAtleta = AE.PKAtleta AND A.Sesso = 'F' 
 ORDER BY t.TempoSecondi;
+
+END //
+
+DELIMITER ;
+
+CALL RebuildAllTables();
