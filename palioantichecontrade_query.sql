@@ -1,8 +1,8 @@
-DROP PROCEDURE IF EXISTS RebuildAllTables;
+USE paliocontrade;
 
 DELIMITER //
 
-CREATE PROCEDURE RebuildAllTables()
+CREATE PROCEDURE IF NOT EXISTS RebuildAllTables()
 
 BEGIN
 
@@ -33,9 +33,7 @@ ORDER BY T.Contrada,
 
 /* SessoTempi */
 
-DROP VIEW IF EXISTS SessoTempiView;
-
-CREATE VIEW SessoTempiView
+CREATE VIEW IF NOT EXISTS SessoTempiView
 AS
 SELECT
 	A.Sesso,
@@ -56,9 +54,7 @@ ORDER BY A.Sesso,
 
 /* Tempi */
 
-DROP VIEW IF EXISTS TempiView;
-
-CREATE VIEW TempiView
+CREATE VIEW IF NOT EXISTS TempiView
 AS
 SELECT T.Anno,
 	T.Contrada,
@@ -78,9 +74,7 @@ ORDER BY T.Anno,
 
 /* TempiFull */
 
-DROP VIEW IF EXISTS TempiFullView;
-
-CREATE VIEW TempiFullView
+CREATE VIEW IF NOT EXISTS TempiFullView
 AS
 SELECT TV.Anno,
 	TV.Contrada,
@@ -113,9 +107,7 @@ ORDER BY TV.Anno,
 
 /* AnnoContradaTempoTotale */
 
-DROP VIEW IF EXISTS AnnoContradaTempoTotaleView;
-
-CREATE VIEW AnnoContradaTempoTotaleView
+CREATE VIEW IF NOT EXISTS AnnoContradaTempoTotaleView
 AS
 SELECT TV.Anno,
 	TV.Contrada,
@@ -136,12 +128,10 @@ ORDER BY TV.Anno,
 
 /* AnnoContradaPiazzamentoTempo */
 
-DROP TABLE IF EXISTS AnnoContradaPiazzamentoTempo;
-
 SET @anno := 0;
 SET @num := 1;
 
-CREATE TABLE AnnoContradaPiazzamentoTempo
+CREATE TABLE IF NOT EXISTS AnnoContradaPiazzamentoTempo
 AS
 SELECT Anno,
 	Contrada,
@@ -162,9 +152,7 @@ ORDER BY Anno,
 
 /* SessoMiglioriTempi */
 
-DROP TABLE IF EXISTS SessoMiglioriTempiDettaglio;
-
-CREATE TABLE SessoMiglioriTempiDettaglio
+CREATE TABLE IF NOT EXISTS SessoMiglioriTempiDettaglio
 AS
 SELECT PKAtleta,
 	@num := if(@num IS NULL, 1, if(@pkatleta = PKAtleta, @num + 1, 1)) AS rank,
@@ -178,9 +166,7 @@ FROM T_Tempi
 ORDER BY PKAtleta,
 	TempoSecondi;
 
-DROP TABLE IF EXISTS SessoMiglioriTempi;
-
-CREATE TABLE SessoMiglioriTempi
+CREATE TABLE IF NOT EXISTS SessoMiglioriTempi
 AS
 SELECT
 	A.Sesso,
@@ -201,9 +187,7 @@ ORDER BY A.Sesso,
 
 /* AtletaTotalePartecipazioni */
 
-DROP VIEW IF EXISTS AtletaTotalePartecipazioniView;
-
-CREATE VIEW AtletaTotalePartecipazioniView
+CREATE VIEW IF NOT EXISTS AtletaTotalePartecipazioniView
 AS
 SELECT
 	CASE WHEN TCVMo.NumeroPartecipazioni IS NULL THEN 0 ELSE TCVMo.NumeroPartecipazioni END
@@ -232,12 +216,10 @@ ORDER BY NumeroPartecipazioni DESC,
 
 /* Piazzamenti */
 
-DROP TABLE IF EXISTS Piazzamenti;
-
 SET @piazzamento := 1;
 SET @last_anno := 0;
 
-CREATE TABLE Piazzamenti
+CREATE TABLE IF NOT EXISTS Piazzamenti
 AS
 SELECT
 	TT.Anno,
@@ -268,9 +250,7 @@ ORDER BY TT.Anno,
 
 /* PiazzamentiTotali */
 
-DROP VIEW IF EXISTS PiazzamentiTotaliView;
-
-CREATE VIEW PiazzamentiTotaliView
+CREATE VIEW IF NOT EXISTS PiazzamentiTotaliView
 AS
 SELECT Contrada,
 	SUM(CASE WHEN Piazzamento = 1 THEN 1 ELSE 0 END) AS 1o,
@@ -285,9 +265,7 @@ ORDER BY 1o DESC, 2o DESC, 3o DESC, 4o DESC;
 
 /* Punteggi */
 
-DROP VIEW IF EXISTS PunteggiView;
-
-CREATE VIEW PunteggiView
+CREATE VIEW IF NOT EXISTS Punteggiview
 AS
 SELECT Contrada,
 	SUM(5 - Piazzamento) AS Punti
@@ -299,9 +277,7 @@ ORDER BY Punti DESC, Contrada;
 
 /* ContradaTempoTotale */
 
-DROP VIEW IF EXISTS ContradaTempoTotaleView;
-
-CREATE VIEW ContradaTempoTotaleView
+CREATE VIEW IF NOT EXISTS ContradaTempoTotaleView
 AS
 SELECT
 	Contrada,
@@ -320,9 +296,7 @@ ORDER BY TempoSecondi;
 
 /* TempoTotale */
 
-DROP VIEW IF EXISTS TempoTotaleView;
-
-CREATE VIEW TempoTotaleView
+CREATE VIEW IF NOT EXISTS TempoTotaleView
 AS
 SELECT
 	80 * COUNT(DISTINCT Anno) AS KmTotali,
@@ -339,9 +313,7 @@ FROM T_Tempi T;
 
 /* ContradaMigliorTempo */
 
-DROP TABLE IF EXISTS ContradaMigliorTempo;
-
-CREATE TABLE ContradaMigliorTempo
+CREATE TABLE IF NOT EXISTS ContradaMigliorTempo
 AS
 SELECT
 	P.Contrada,
@@ -366,12 +338,10 @@ ORDER BY P.TempoSecondi;
 
 /* PiazzamentiUomini */
 
-DROP TABLE IF EXISTS PiazzamentiUomini;
-
 SET @piazzamento := 1;
 SET @last_anno := 0;
 
-CREATE TABLE PiazzamentiUomini
+CREATE TABLE IF NOT EXISTS PiazzamentiUomini
 AS
 SELECT
 	TT.Anno,
@@ -403,9 +373,7 @@ ORDER BY TT.Anno,
 
 /* ContradaMigliorPiazzamentoUomini */
 
-DROP TABLE IF EXISTS ContradaMigliorPiazzamentoUomini;
-
-CREATE TABLE ContradaMigliorPiazzamentoUomini
+CREATE TABLE IF NOT EXISTS ContradaMigliorPiazzamentoUomini
 AS
 SELECT
 	P.Contrada,
@@ -453,12 +421,10 @@ ORDER BY P.TempoSecondi;
 
 /* PiazzamentiDonne */
 
-DROP TABLE IF EXISTS PiazzamentiDonne;
-
 SET @piazzamento := 1;
 SET @last_anno := 0;
 
-CREATE TABLE PiazzamentiDonne
+CREATE TABLE IF NOT EXISTS PiazzamentiDonne
 AS
 SELECT
 	TT.Anno,
@@ -490,9 +456,7 @@ ORDER BY TT.Anno,
 
 /* ContradaMigliorPiazzamentoDonne */
 
-DROP TABLE IF EXISTS ContradaMigliorPiazzamentoDonne;
-
-CREATE TABLE ContradaMigliorPiazzamentoDonne
+CREATE TABLE IF NOT EXISTS ContradaMigliorPiazzamentoDonne
 AS
 SELECT
 	P.Contrada,
@@ -529,9 +493,7 @@ ORDER BY P.TempoSecondi;
 
 /* SessoTotaleTempi */
 
-DROP VIEW IF EXISTS SessoTotaleTempiView;
-
-CREATE VIEW SessoTotaleTempiView
+CREATE VIEW IF NOT EXISTS SessoTotaleTempiView
 AS
 SELECT A.Sesso,
 	CONCAT(
@@ -546,9 +508,7 @@ GROUP BY A.Sesso;
 
 /* ContradaSessoTotaleTempi */
 
-DROP VIEW IF EXISTS ContradaSessoTotaleTempiView;
-
-CREATE VIEW ContradaSessoTotaleTempiView
+CREATE VIEW IF NOT EXISTS ContradaSessoTotaleTempiView
 AS
 SELECT T.Contrada, A.Sesso,
 	CONCAT(
@@ -569,25 +529,15 @@ INNER JOIN T_Atleti A ON T.PKAtleta = A.PKAtleta
 GROUP BY T.Contrada, A.Sesso
 ORDER BY A.Sesso, SUM(T.TempoSecondi);
 
-DROP VIEW IF EXISTS v_50MiglioriAtlete;
+CREATE VIEW IF NOT EXISTS v_50MiglioriAtlete AS SELECT * FROM SessoMiglioriTempi WHERE Sesso = 'F' LIMIT 50;
 
-CREATE VIEW v_50MiglioriAtlete AS SELECT * FROM SessoMiglioriTempi WHERE Sesso = 'F' LIMIT 50;
+CREATE VIEW IF NOT EXISTS v_50MiglioriAtleti AS SELECT * FROM SessoMiglioriTempi WHERE Sesso = 'M' LIMIT 100;
 
-DROP VIEW IF EXISTS v_50MiglioriAtleti;
+CREATE VIEW IF NOT EXISTS v_100MiglioriAtlete AS SELECT * FROM SessoMiglioriTempi WHERE Sesso = 'F' LIMIT 100;
 
-CREATE VIEW v_50MiglioriAtleti AS SELECT * FROM SessoMiglioriTempi WHERE Sesso = 'M' LIMIT 100;
+CREATE VIEW IF NOT EXISTS v_100MiglioriAtleti AS SELECT * FROM SessoMiglioriTempi WHERE Sesso = 'M' LIMIT 100;
 
-DROP VIEW IF EXISTS v_100MiglioriAtlete;
-
-CREATE VIEW v_100MiglioriAtlete AS SELECT * FROM SessoMiglioriTempi WHERE Sesso = 'F' LIMIT 100;
-
-DROP VIEW IF EXISTS v_100MiglioriAtleti;
-
-CREATE VIEW v_100MiglioriAtleti AS SELECT * FROM SessoMiglioriTempi WHERE Sesso = 'M' LIMIT 100;
-
-DROP VIEW IF EXISTS v_PiazzamentiPerAnno;
-
-CREATE VIEW v_PiazzamentiPerAnno
+CREATE VIEW IF NOT EXISTS v_PiazzamentiPerAnno
 AS
 SELECT
 	P1.Anno,
@@ -602,9 +552,7 @@ INNER JOIN Piazzamenti P4 ON P1.Anno = P4.Anno AND P4.Piazzamento = 4
 WHERE P1.Piazzamento = 1
 ORDER BY P1.Anno;
 
-DROP VIEW IF EXISTS RiepilogoPartecipazioniDettaglioView;
-
-CREATE VIEW RiepilogoPartecipazioniDettaglioView
+CREATE VIEW IF NOT EXISTS RiepilogoPartecipazioniDettaglioView
 AS
 SELECT DISTINCT
 	A.PKAtleta,
@@ -618,9 +566,7 @@ FROM T_Tempi T
 INNER JOIN T_Atleti A ON A.PKAtleta = T.PKAtleta
 INNER JOIN Piazzamenti P ON P.Anno = T.Anno AND P.Contrada = T.Contrada;
 
-DROP VIEW IF EXISTS RiepilogoPartecipazioniView;
-
-CREATE VIEW RiepilogoPartecipazioniView
+CREATE VIEW IF NOT EXISTS RiepilogoPartecipazioniView
 AS
 SELECT
 	A.Cognome,
@@ -646,9 +592,7 @@ ORDER BY NumeroPrimiPosti DESC,
 	A.Cognome,
 	A.Nome;
 
-DROP VIEW IF EXISTS UniformitaTempiView;
-
-CREATE VIEW UniformitaTempiView
+CREATE VIEW IF NOT EXISTS UniformitaTempiView
 AS
 SELECT
 	T.PKAtleta,
@@ -678,9 +622,7 @@ HAVING COUNT(1) >= 5
 ORDER BY STD(T.TempoSecondi) / COUNT(1),
 	NumeroPartecipazioni DESC;
 
-DROP TABLE IF EXISTS TempoEsordientiUomini; 
-
-CREATE TABLE TempoEsordientiUomini AS 
+CREATE TABLE IF NOT EXISTS TempoEsordientiUomini AS 
 SELECT 
 	REPLACE(t.PKAtleta, '_', ' ') AS Atleta, 
 	t.Contrada, 
@@ -697,9 +639,7 @@ INNER JOIN T_Tempi t ON t.PKAtleta = AE.PKAtleta AND t.Anno = AE.AnnoEsordio
 INNER JOIN T_Atleti A ON A.PKAtleta = AE.PKAtleta AND A.Sesso = 'M' 
 ORDER BY t.TempoSecondi;
 
-DROP TABLE IF EXISTS TempoEsordientiDonne; 
-
-CREATE TABLE TempoEsordientiDonne AS 
+CREATE TABLE IF NOT EXISTS TempoEsordientiDonne AS 
 SELECT 
 	REPLACE(t.PKAtleta, '_', ' ') AS Atleta, 
 	t.Contrada, 
