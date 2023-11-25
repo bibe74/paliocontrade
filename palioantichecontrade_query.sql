@@ -152,22 +152,23 @@ ORDER BY Anno,
 
 /* SessoMiglioriTempi */
 
-CREATE TABLE IF NOT EXISTS SessoMiglioriTempiDettaglio
-AS
-SELECT PKAtleta,
-	@num := if(@num IS NULL, 1, if(@pkatleta = PKAtleta, @num + 1, 1)) AS rank,
-	@pkatleta := PKAtleta AS dummy,
-	Anno,
-	Contrada,
-	Pettorale,
-	TempoSecondi,
-	TempoDescrizione
-FROM T_Tempi
-ORDER BY PKAtleta,
-	TempoSecondi;
+DROP TABLE IF EXISTS sessomiglioritempi;
 
-CREATE TABLE IF NOT EXISTS SessoMiglioriTempi
+CREATE TABLE IF NOT EXISTS sessomiglioritempi
 AS
+WITH SessoMiglioriTempiDettaglio
+AS (
+	SELECT PKAtleta,
+		Anno,
+		Contrada,
+		Pettorale,
+		TempoSecondi,
+		TempoDescrizione,
+		
+		ROW_NUMBER() OVER (PARTITION BY PKAtleta ORDER BY TempoSecondi) AS rn
+
+	FROM t_tempi
+)
 SELECT
 	A.Sesso,
 	A.Cognome,
@@ -177,9 +178,10 @@ SELECT
 	T.Pettorale,
 	T.TempoSecondi,
 	T.TempoDescrizione
+
 FROM SessoMiglioriTempiDettaglio T
 INNER JOIN T_Atleti A ON T.PKAtleta = A.PKAtleta
-WHERE T.rank = 1
+WHERE T.rn = 1
 ORDER BY A.Sesso,
 	T.TempoSecondi;
 
